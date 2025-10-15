@@ -1,0 +1,29 @@
+{
+  "name": "util",
+  "description": "módulo de utilidades do node.js para todas as engines",
+  "version": "0.12.5",
+  "author": {
+    "name": "cavassani",
+    "url": "https://cv55n.github.io"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "inherits": "^2.0.4",
+    "is-arguments": "^1.2.0",
+    "is-generator-function": "^1.1.2",
+    "is-typed-array": "^1.1.15",
+    "which-typed-array": "^1.1.19"
+  },
+  "devDependencies": {
+    "airtap": "^5.0.0",
+    "core-js": "^3.46.0",
+    "is-async-supported": "^1.2.0",
+    "object.assign": "^4.1.7",
+    "object.entries": "^1.1.9",
+    "run-series": "^1.1.9",
+    "safe-buffer": "^5.2.1",
+    "tape": "^5.9.0"
+  }
+}
