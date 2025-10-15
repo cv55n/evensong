@@ -1,0 +1,12 @@
+# esses são as plataformas de modelos de funding suportadas
+
+github: # substitua por até 4 nomes de usuários habilitados para patrocinadores do github, por exemplo, [usuário1, usuário2]
+patreon: # substitua por um único nome de usuário do patreon
+open_collective: # substitua por um único nome de usuário do open collective
+ko_fi: # substitua por um único nome de usuário do ko-fi
+tidelift: npm/util
+community_bridge: # substitua por um único nome de projeto community bridge, por exemplo, cloud-foundry
+liberapay: # substitua por um único nome de usuário do liberapay
+issuehunt: # substitua por um único nome de usuário do issuehunt
+otechie: # substitua por um único nome de usuário do otechie
+custom: # substitua por até 4 urls de patrocínio personalizados, por exemplo, ['link1', 'link2']
