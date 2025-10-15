@@ -1,0 +1,9 @@
+{
+  "name": "process",
+  "description": "informação de processamento para node.js e navegadores",
+  "version": "0.11.10",
+  "main": "./index.js",
+  "author": "cavassani",
+  "license": "MIT",
+  "keywords": ["process"]
+}

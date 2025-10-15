@@ -1,10 +1,10 @@
 {
   "name": "path",
+  "description": "módulo path do node.js",
   "version": "0.12.7",
   "main": "./path/path.js",
   "author": "cavassani",
   "license": "MIT",
-  "description": "módulo path do node.js",
   "dependencies": {
     "process": "^0.11.10",
     "util": "^0.12.5"
