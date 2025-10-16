@@ -1,0 +1,8 @@
+name: rodar testes
+on:
+  - push
+  - pull_request
+jobs:
+  test-js:
+    name: 'jsbt v0.3.3' # deve bater com o commit abaixo
+    uses: paulmillr/jsbt/.github/workflows/test-js.yml@c9a9f2cd6b4841aa3117b174e9ea468b1650e5ea
