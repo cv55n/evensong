@@ -1,0 +1,39 @@
+{
+  "name": "chokidar",
+  "description": "biblioteca de observação de arquivos multiplataforma mínima e eficiente",
+  "version": "4.0.3",
+  "type": "module",
+  "author": {
+    "name": "cavassani",
+    "url": "https://cv55n.github.io"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "handler.js",
+    "handler.d.ts",
+    "!**/*.test.*",
+    "src/index.ts",
+    "src/handler.ts"
+  ],
+  "main": "./index.js",
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    },
+    "./handler.js": {
+      "default": "./handler.js"
+    }
+  },
+  "dependencies": {
+    "readdirp": "^4.1.2"
+  },
+  "devDependencies": {
+    "@paulmillr/jsbt": "^0.4.4",
+    "micro-should": "^0.5.3",
+    "prettier": "^3.6.2",
+    "tinyspy": "^4.0.4",
+    "typescript": "^5.9.3",
+    "upath": "^2.0.1"
+  }
+}
