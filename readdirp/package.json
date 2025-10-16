@@ -1,0 +1,39 @@
+{
+  "name": "readdirp",
+  "description": "versão recursiva do fs.readdir com um pequeno footprint de ram e cpu.",
+  "version": "4.1.2",
+  "author": {
+    "name": "cavassani",
+    "url": "https://cv55n.github.io"
+  },
+  "main": "./index.js",
+  "module": "./esm/index.js",
+  "types": "./index.d.ts",
+  "license": "MIT",
+  "keywords": [
+    "recursive",
+    "fs",
+    "stream",
+    "streams",
+    "readdir",
+    "filesystem",
+    "find",
+    "filter"
+  ],
+  "scripts": {
+    "test": "node test/index.test.js"
+  },
+  "engines": {
+    "node": ">= 14.18.0"
+  },
+  "devDependencies": {
+    "@paulmillr/jsbt": "^0.4.4",
+    "@types/node": "^24.8.0",
+    "c8": "^10.1.3",
+    "chai": "^6.2.0",
+    "chai-subset": "^1.6.0",
+    "micro-should": "^0.5.3",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3"
+  }
+}
