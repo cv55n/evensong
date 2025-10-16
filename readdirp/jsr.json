@@ -1,0 +1,19 @@
+{
+    "name": "@paulmillr/readdirp",
+
+    "version": "4.1.2",
+
+    "exports": "./index.ts",
+
+    "publish": {
+        "include": [
+            "index.ts",
+            "jsr.json",
+
+            "LICENSE",
+            "README.md"
+        ]
+    },
+
+    "license": "MIT"
+}
