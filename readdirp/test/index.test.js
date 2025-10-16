@@ -1,0 +1,606 @@
+import { chmod, rm, mkdir, symlink, readdir, readFile, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { Readable } from 'node:stream';
+import { describe, it } from 'micro-should';
+import { tmpdir } from 'node:os';
+
+import { readdirp, readdirpPromise, ReaddirpStream } from '../esm/index.js';
+
+import sysPath from 'node:path';
+import chai from 'chai';
+import chaiSubset from 'chai-subset';
+
+chai.use(chaiSubset);
+chai.should();
+
+const __dirname = sysPath.dirname(fileURLToPath(import.meta.url));
+
+const supportsDirent = true;
+const isWindows = process.platform === 'win32';
+const root = sysPath.join(tmpdir(), 'readdirp-' + Date.now());
+
+let testCount = 0;
+let currPath;
+
+const read = (options) => readdirpPromise(currPath, options).then((res) => res.sort((a, b) => a.path.localeCompare(b.path)));
+
+const touch = async (files = [], dirs = []) => {
+    for (const name of files) {
+        const p = sysPath.join(currPath, name);
+
+        await writeFile(p, Date.now().toString());
+    }
+
+    for (const dir of dirs) {
+        await mkdir(sysPath.join(currPath, dir));
+    }
+};
+
+const formatEntry = (file, dir = root) => {
+    return {
+        basename: sysPath.basename(file),
+        path: sysPath.normalize(file),
+        fullPath: sysPath.join(dir, file)
+    };
+};
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const waitForEnd = (stream) => new Promise((resolve) => stream.on('end', resolve));
+
+async function beforeEach() {
+    testCount++;
+
+    const i = testCount.toString();
+
+    currPath = sysPath.join(root, i);
+
+    try {
+        await rm(currPath, {
+            recursive: true
+        });
+    } catch (e) {}
+
+    await mkdir(currPath, {
+        recursive: true
+    });
+
+    return true;
+}
+
+let afterEach = async () => {
+    // await pRimraf(currPath);
+
+    await rm(currPath, {
+        recursive: true
+    });
+};
+
+describe('readdirp', () => {
+    describe('basic', () => {
+        it('lê o diretório', async () => {
+            await beforeEach();
+
+            const files = ['a.txt', 'b.txt', 'c.txt'];
+
+            await touch(files);
+
+            const res = await read();
+
+            res.should.have.lengthOf(files.length);
+
+            res.forEach((entry, index) => {
+                entry.should.containSubset(formatEntry(files[index], currPath));
+            });
+
+            await afterEach();
+        });
+    });
+
+    describe('symlinks', () => {
+        if (isWindows)
+            return;
+
+        it('auxilia symlinks', async () => {
+            await beforeEach();
+
+            const newPath = sysPath.join(currPath, 'test-symlinked.js');
+
+            await symlink(sysPath.join(__dirname, 'index.test.js'), newPath);
+
+            const res = await read();
+            const first = res[0];
+            
+            first.should.containSubset(formatEntry('test-symlinked.js', currPath));
+
+            const contents = await readFile(first.fullPath);
+
+            contents.should.match(/auxilia symlinks/); // nome desse teste
+        });
+
+        it('auxilia diretórios symlinkados', async () => {
+            await beforeEach();
+
+            const originalPath = sysPath.join(__dirname, '..', 'esm');
+            const originalFiles = await readdir(originalPath);
+            const newPath = sysPath.join(currPath, 'esm');
+            
+            await symlink(originalPath, newPath);
+
+            const res = await read();
+
+            const symlinkedFiles = res.map((entry) => entry.basename);
+            
+            symlinkedFiles.should.eql(originalFiles.sort((a, b) => a.localeCompare(b)));
+        });
+
+        it('deve utilizar lstat em vez de stat', async () => {
+            await beforeEach();
+
+            const files = ['a.txt', 'b.txt', 'c.txt'];
+
+            const symlinkName = 'test-symlinked.js';
+            const newPath = sysPath.join(currPath, symlinkName);
+
+            await symlink(sysPath.join(__dirname, 'index.test.js'), newPath);
+
+            await touch(files);
+
+            const expect = [...files, symlinkName];
+
+            const res = await read({ lstat: true, alwaysStat: true });
+
+            res.should.have.lengthOf(expect.length);
+
+            res.forEach((entry, index) => {
+                entry.should.containSubset(formatEntry(expect[index], currPath, false));
+
+                entry.should.include.own.key('stats');
+
+                if (entry.basename === symlinkName) {
+                    entry.stats.isSymbolicLink().should.equals(true);
+                }
+            });
+        });
+    });
+
+    describe('tipo', () => {
+        const files = ['a.txt', 'b.txt', 'c.txt'];
+        const dirs = ['d', 'e', 'f', 'g'];
+
+        it('arquivos', async () => {
+            await beforeEach();
+            await touch(files, dirs);
+
+            const res = await read({ type: 'files' });
+
+            res.should.have.lengthOf(files.length);
+
+            res.forEach((entry, index) =>
+                entry.should.containSubset(formatEntry(files[index], currPath))
+            );
+        });
+
+        it('diretórios', async () => {
+            await beforeEach();
+            await touch(files, dirs);
+
+            const res = await read({ type: 'directories' });
+
+            res.should.have.lengthOf(dirs.length);
+
+            res.forEach((entry, index) => entry.should.containSubset(formatEntry(dirs[index], currPath)));
+        });
+
+        it('ambos', async () => {
+            await beforeEach();
+            await touch(files, dirs);
+
+            const res = await read({ type: 'both' });
+
+            const both = files.concat(dirs);
+
+            res.should.have.lengthOf(both.length);
+
+            res.forEach((entry, index) => entry.should.containSubset(formatEntry(both[index], currPath)));
+        });
+
+        it('todos', async () => {
+            await beforeEach();
+            await touch(files, dirs);
+
+            const res = await read({ type: 'all' });
+            const all = files.concat(dirs);
+
+            res.should.have.lengthOf(all.length);
+
+            res.forEach((entry, index) => entry.should.containSubset(formatEntry(all[index], currPath)));
+        });
+
+        it('inválido', async () => {
+            await beforeEach();
+
+            try {
+                await read({ type: 'bogus' });
+            } catch (error) {
+                error.message.should.match(/tipo inválido/);
+            }
+        });
+    });
+
+    describe('profundidade', () => {
+        const depth0 = ['a.js', 'b.js', 'c.js'];
+        const subdirs = ['subdir', 'deep'];
+        const depth1 = ['subdir/d.js', 'deep/e.js'];
+        const deepSubdirs = ['subdir/s1', 'subdir/s2', 'deep/d1', 'deep/d2'];
+        const depth2 = ['subdir/s1/f.js', 'deep/d1/h.js'];
+
+        async function cleanupDepth() {
+            await touch(depth0, subdirs);
+            await touch(depth1, deepSubdirs);
+            await touch(depth2);
+        }
+
+        it('0', async () => {
+            await beforeEach();
+            await cleanupDepth();
+
+            const res = await read({ depth: 0 });
+
+            res.should.have.lengthOf(depth0.length);
+
+            res.forEach((entry, index) => entry.should.containSubset(formatEntry(depth0[index], currPath)));
+        });
+
+        it('1', async () => {
+            await beforeEach();
+            await cleanupDepth();
+
+            const res = await read({ depth: 1 });
+
+            const expect = [...depth0, ...depth1];
+
+            res.should.have.lengthOf(expect.length);
+
+            res
+                .sort((a, b) => (a.basename > b.basename ? 1 : -1))
+                .forEach((entry, index) => entry.should.containSubset(formatEntry(expect[index], currPath)));
+        });
+
+        it('2', async () => {
+            await beforeEach();
+            await cleanupDepth();
+
+            const res = await read({ depth: 2 });
+
+            const expect = [...depth0, ...depth1, ...depth2];
+            
+            res.should.have.lengthOf(expect.length);
+            
+            res
+                .sort((a, b) => (a.basename > b.basename ? 1 : -1))
+                .forEach((entry, index) => entry.should.containSubset(formatEntry(expect[index], currPath)));
+        });
+
+        it('default', async () => {
+            await beforeEach();
+            await cleanupDepth();
+
+            const res = await read();
+
+            const expect = [...depth0, ...depth1, ...depth2];
+
+            res.should.have.lengthOf(expect.length);
+
+            res
+                .sort((a, b) => (a.basename > b.basename ? 1 : -1))
+                .forEach((entry, index) => entry.should.containSubset(formatEntry(expect[index], currPath)));
+        });
+    });
+
+    describe('filtração', () => {
+        async function cleanupFilter() {
+            await beforeEach();
+            await touch(['a.js', 'b.txt', 'c.js', 'd.js', 'e.rb']);
+        }
+
+        it('espaços iniciais e finais', async () => {
+            await cleanupFilter();
+
+            const expect = ['a.js', 'c.js', 'd.js', 'e.rb'];
+
+            const res = await read({
+                fileFilter: (a) => a.basename.endsWith('.js') || a.basename.endsWith('.rb'),
+            });
+
+            res.should.have.lengthOf(expect.length);
+
+            res.forEach((entry, index) =>
+                entry.should.containSubset(formatEntry(expect[index], currPath))
+            );
+        });
+
+        it('função', async () => {
+            await cleanupFilter();
+
+            const expect = ['a.js', 'c.js', 'd.js'];
+
+            const res = await read({ fileFilter: (entry) => sysPath.extname(entry.fullPath) === '.js' });
+
+            res.should.have.lengthOf(expect.length);
+
+            res.forEach((entry, index) => entry.should.containSubset(formatEntry(expect[index], currPath)));
+
+            if (supportsDirent) {
+                const expect2 = ['a.js', 'b.txt', 'c.js', 'd.js', 'e.rb'];
+
+                const res2 = await read({ fileFilter: (entry) => entry.dirent.isFile() });
+
+                res2.should.have.lengthOf(expect2.length);
+
+                res2.forEach((entry, index) => entry.should.containSubset(formatEntry(expect2[index], currPath)));
+            }
+        });
+
+        it('função com estatísticas', async () => {
+            await cleanupFilter();
+
+            const expect = ['a.js', 'c.js', 'd.js'];
+
+            const res = await read({
+                alwaysStat: true,
+
+                fileFilter: (entry) => sysPath.extname(entry.fullPath) === '.js'
+            });
+
+            res.should.have.lengthOf(expect.length);
+
+            res.forEach((entry, index) => {
+                entry.should.containSubset(formatEntry(expect[index], currPath));
+
+                entry.should.include.own.key('stats');
+            });
+
+            const expect2 = ['a.js', 'b.txt', 'c.js', 'd.js', 'e.rb'];
+
+            const res2 = await read({ alwaysStat: true, fileFilter: (entry) => entry.stats.size > 0 });
+
+            res2.should.have.lengthOf(expect2.length);
+
+            res2.forEach((entry, index) => {
+                entry.should.containSubset(formatEntry(expect2[index], currPath));
+
+                entry.should.include.own.key('stats');
+            });
+        });
+    });
+
+    describe('variados', () => {
+        it('emite uma stream legível', async () => {
+            await beforeEach();
+
+            const stream = readdirp(currPath);
+
+            stream.should.be.an.instanceof(Readable);
+            stream.should.be.an.instanceof(ReaddirpStream);
+        });
+
+        it('falha sem uma opção de root passada', async () => {
+            await beforeEach();
+
+            try {
+                readdirp();
+            } catch (error) {
+                error.should.be.an.instanceof(Error);
+            }
+        });
+
+        it('desativa uma antiga api', async () => {
+            // await beforeEach();
+
+            try {
+                readdirp({ root: '.' });
+            } catch (error) {
+                error.should.be.an.instanceof(Error);
+            }
+        });
+
+        it('expõe a api da promise', async () => {
+            await beforeEach();
+
+            const created = ['a.txt', 'c.txt'];
+            
+            await touch(created);
+            
+            let result = await readdirpPromise(currPath);
+            
+            result = result.sort((a, b) => a.path.localeCompare(b.path));
+            result.should.have.lengthOf(created.length);
+            
+            result.forEach((entry, index) =>
+                entry.should.containSubset(formatEntry(created[index], currPath))
+            );
+        });
+
+        it('deve emitir um aviso de diretório ausente', async () => {
+            await beforeEach();
+
+            // readdirp() é inicializado em algum grande diretório root
+            // readdirp() recebe o path a/b/c para sua queue
+            // readdirp está lendo outra coisa
+            // a/b é excluído, então stat()-ting a/b/c agora emitiria enoent
+            //
+            // deveríamos emitir avisos para este caso
+            //
+            // this.timeout(4000);
+            
+            await mkdir(sysPath.join(currPath, 'a'));
+            await mkdir(sysPath.join(currPath, 'b'));
+            await mkdir(sysPath.join(currPath, 'c'));
+            
+            let isWarningCalled = false;
+            
+            const stream = readdirp(currPath, {
+                type: 'all',
+                highWaterMark: 1
+            });
+            
+            stream.on('warn', (warning) => {
+                warning.should.be.an.instanceof(Error);
+                warning.code.should.equals('ENOENT');
+
+                isWarningCalled = true;
+            });
+
+            await delay(1000);
+
+            await rm(sysPath.join(currPath, 'a'), { recursive: true });
+
+            stream.resume();
+
+            await Promise.race([waitForEnd(stream), delay(2000)]);
+
+            isWarningCalled.should.equals(true);
+        }); // .timeout(4000);
+
+        it('deve emitir um aviso de arquivo ausente', async () => {
+            await beforeEach();
+
+            // readdirp() é inicializado em algum grande diretório root
+            // readdirp() recebe os arquivos f1, f2, f3 para sua queue
+            // readdirp está lendo outra coisa
+            // f1 é excluído, então stat()-ting f1 agora emitiria enoent
+            //
+            // deveríamos emitir avisos para este caso e processar
+            // apropriadamente os arquivos f2 e f3
+            //
+            // this.timeout(4000);
+
+            await touch(['f1', 'f2', 'f3']);
+            
+            let isWarningCalled = false;
+            
+            const stream = readdirp(currPath, {
+                type: 'all',
+                
+                highWaterMark: 1,
+                alwaysStat: true
+            });
+            
+            stream.on('warn', (warning) => {
+                warning.should.be.an.instanceof(Error);
+                warning.code.should.equals('ENOENT');
+
+                isWarningCalled = true;
+            });
+
+            await delay(1000);
+
+            await rm(sysPath.join(currPath, 'f1'), { recursive: true });
+
+            const detected = [];
+
+            stream.on('data', (file) => {
+                detected.push(file.path);
+            });
+
+            await Promise.race([waitForEnd(stream), delay(2000)]);
+
+            chai.expect(detected).to.deep.equal(['f2', 'f3']);
+
+            isWarningCalled.should.equals(true);
+        });
+
+        it('deve emitir um aviso para arquivo com permissão estrita', async () => {
+            // o windows não gera erro de permissão se você acessar o diretório permitido
+
+            if (isWindows) {
+                return true;
+            }
+
+            await beforeEach();
+
+            const permitedDir = sysPath.join(currPath, 'permited');
+
+            await mkdir(permitedDir, { mode: 0o333 });
+
+            let isWarningCalled = false;
+
+            const stream = readdirp(currPath, { type: 'all' })
+                .on('data', (d) => {})
+                .on('warn', (warning) => {
+                    warning.should.be.an.instanceof(Error);
+                    warning.code.should.equals('EACCES');
+
+                    isWarningCalled = true;
+                });
+
+            await Promise.race([waitForEnd(stream), delay(4000)]);
+            
+            isWarningCalled.should.equals(true);
+            
+            await chmod(permitedDir, 0o777);
+        });
+
+        it('não deve emitir aviso após o evento "end"', async () => {
+            // o windows não gera erro de permissão se você acessar o diretório permitido
+
+            if (isWindows) {
+                return true;
+            }
+
+            await beforeEach();
+
+            const subdir = sysPath.join(currPath, 'subdir');
+            const permitedDir = sysPath.join(subdir, 'permited');
+
+            await mkdir(subdir);
+            await mkdir(permitedDir, { mode: 0o333 });
+
+            let isWarningCalled = false;
+            let isEnded = false;
+            let timer;
+
+            const stream = readdirp(currPath, { type: 'all' })
+                .on('data', () => {})
+                .on('warn', (warning) => {
+                    warning.should.be.an.instanceof(Error);
+                    warning.code.should.equals('EACCES');
+                    
+                    isEnded.should.equals(false);
+                    
+                    isWarningCalled = true;
+
+                    clearTimeout(timer);
+                })
+                .on('end', () => {
+                    isWarningCalled.should.equals(true);
+
+                    isEnded = true;
+                });
+
+            await Promise.race([waitForEnd(stream), delay(2000)]);
+            
+            isWarningCalled.should.equals(true);
+            isEnded.should.equals(true);
+            
+            await chmod(permitedDir, 0o777);
+        });
+    });
+});
+
+(async () => {
+    await mkdir(root, {
+        recursive: true
+    });
+
+    // declarar a última task aqui
+    it('clean-up', async () => {
+        await rm(root, {
+            recursive: true,
+            force: true
+        });
+    });
+
+    it.run(true);
+})();
