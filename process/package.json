@@ -2,10 +2,6 @@
   "name": "process",
   "description": "informação de processamento para node.js e navegadores",
   "version": "0.11.10",
-  "main": "./index.js",
-  "browser": "./browser.js",
-  "author": "cavassani",
-  "license": "MIT",
   "keywords": [
     "process"
   ],
@@ -13,6 +9,13 @@
     "test": "mocha test.js",
     "browser": "zuul --no-coverage --ui mocha-bdd --local 8080 -- test.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cv55n/evensong.git"
+  },
+  "license": "MIT",
+  "browser": "./browser.js",
+  "main": "./index.js",
   "engines": {
     "node": ">= 0.6.0"
   },

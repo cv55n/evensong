@@ -2,14 +2,39 @@
   "name": "readdirp",
   "description": "versão recursiva do fs.readdir com um pequeno footprint de ram e cpu.",
   "version": "4.1.2",
+  "homepage": "https://github.com/cv55n/evensong/tree/main/readdirp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cv55n/evensong.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cv55n/evensong/issues"
+  },
   "author": {
     "name": "cavassani",
     "url": "https://cv55n.github.io"
   },
+  "engines": {
+    "node": ">= 14.18.0"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "index.d.ts.map",
+    "index.js.map",
+    "esm"
+  ],
   "main": "./index.js",
   "module": "./esm/index.js",
   "types": "./index.d.ts",
-  "license": "MIT",
+  "exports": {
+    ".": {
+      "import": "./esm/index.js",
+      "require": "./index.js"
+    }
+  },
+  "sideEffects": false,
   "keywords": [
     "recursive",
     "fs",
@@ -21,10 +46,11 @@
     "filter"
   ],
   "scripts": {
-    "test": "node test/index.test.js"
-  },
-  "engines": {
-    "node": ">= 14.18.0"
+    "build": "tsc && tsc -p tsconfig.cjs.json",
+    "lint": "prettier --check index.ts test/index.test.js",
+    "format": "prettier --write index.ts test/index.test.js",
+    "test": "node test/index.test.js",
+    "test:coverage": "c8 node test/index.test.js"
   },
   "devDependencies": {
     "@paulmillr/jsbt": "^0.4.4",

@@ -6,8 +6,29 @@
     "name": "cavassani",
     "url": "https://cv55n.github.io"
   },
+  "browser": {
+    "./support/isBuffer.js": "./support/isBufferBrowser.js"
+  },
+  "files": [
+    "util.js",
+    "support"
+  ],
+  "homepage": "https://github.com/cv55n/evensong",
+  "keywords": [
+    "util"
+  ],
+  "license": "MIT",
+  "main": "./util.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cv55n/evensong.git"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/node/index.js",
+    "test:browsers": "airtap test/browser/index.js",
+    "test:browsers:with-polyfills": "airtap test/browser/with-polyfills.js",
+    "test:browsers:with-polyfills:local": "npm run test:browsers:with-polyfills -- --local",
+    "test:browsers:local": "npm run test:browsers -- --local"
   },
   "dependencies": {
     "inherits": "^2.0.4",

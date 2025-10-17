@@ -2,9 +2,21 @@
   "name": "path",
   "description": "módulo path do node.js",
   "version": "0.12.7",
-  "main": "./path/path.js",
-  "author": "cavassani",
+  "author": {
+    "name": "cavassani",
+    "url": "https://cv55n.github.io"
+  },
+  "keywords": [
+    "ender",
+    "path"
+  ],
   "license": "MIT",
+  "homepage": "https://nodejs.org/docs/latest/api/path.html",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cv55n/evensong.git"
+  },
+  "main": "./path.js",
   "dependencies": {
     "process": "^0.11.10",
     "util": "^0.12.5"
