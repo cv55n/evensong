@@ -1,0 +1,13 @@
+*.bak
+*.log
+/coverage/
+/node_modules/
+/test-fixtures/
+/*.d.ts
+/*.d.mts
+/*.map
+/index.js
+/handler.js
+/esm
+/*.test.js
+/*.test.mjs
