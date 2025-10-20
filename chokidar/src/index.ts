@@ -683,4 +683,126 @@ export class FSWatcher extends EventEmitter<FSWatcherEventMap> {
 
         return this._closePromise;
     }
+
+    /**
+     * expõe a lista de paths observados
+     * 
+     * @returns para chaining
+     */
+    getWatched(): Record<string, string[]> {
+        const watchList: Record<string, string[]> = {};
+
+        this._watched.forEach((entry, dir) => {
+            const key = this.options.cwd ? sp.relative(this.options.cwd, dir) : dir;
+            const index = key || ONE_DOT;
+
+            watchList[index] = entry.getChildren().sort();
+        });
+
+        return watchList;
+    }
+
+    emitWithAll(event: EventName, args: EmitArgs): void {
+        this.emit(event, ...args);
+
+        if (event !== EV.ERROR)
+            this.emit(EV.ALL, event, ...args);
+    }
+
+    // helpers comuns
+    // --------------
+
+    /**
+     * normaliza e emite os eventos
+     * 
+     * chamar o _emit não significa que emit() será chamado
+     * 
+     * @param event tipo do evento
+     * @param path path do arquivo ou diretório
+     * @param stats argumentos a serem passados com o evento
+     * 
+     * @returns o erro caso definido
+     */
+    async _emit(event: EventName, path: Path, stats?: Stats): Promise<this | undefined> {
+        if (this.closed)
+            return;
+
+        const opts = this.options;
+
+        if (isWindows)
+            path = sp.normalize(path);
+
+        if (opts.cwd)
+            path = sp.relative(opts.cwd, path);
+
+        const args: EmitArgs | EmitErrorArgs = [path];
+
+        if (stats != null)
+            args.push(stats);
+
+        const awf = opts.awaitWriteFinish;
+
+        let pw;
+
+        if (awf && (pw = this._pendingWrites.get(path))) {
+            pw.lastChange = new Date();
+
+            return this;
+        }
+
+        if (opts.atomic) {
+            if (event === EV.UNLINK) {
+                this._pendingUnlinks.set(path, [event, ...args]);
+
+                setTimeout(() => {
+                    this._pendingUnlinks.forEach((entry: EmitArgsWithName, path: Path) => {
+                        this.emit(...entry);
+                        this.emit(EV.ALL, ...entry);
+                        this._pendingUnlinks.delete(path);
+                    });
+                }, typeof opts.atomic === 'number' ? opts.atomic : 100);
+
+                return this;
+            }
+
+            if (event === EV.ADD && this._pendingUnlinks.has(path)) {
+                event = EV.CHANGE;
+
+                this._pendingUnlinks.delete(path);
+            }
+        }
+
+        if (awf && (event === EV.ADD || event === EV.CHANGE) && this._readyEmitted) {
+            const awfEmit = (err?: Error, stats?: Stats) => {
+                if (err) {
+                    event = EV.ERROR;
+
+                    (args as unknown as EmitErrorArgs)[0] = err;
+                    
+                    this.emitWithAll(event, args);
+                } else if (stats) {
+                    // se as estatísticas não existirem o arquivo deve ter sido excluído
+                    
+                    if (args.length > 1) {
+                        args[1] = stats;
+                    } else {
+                        args.push(stats);
+                    }
+
+                    this.emitWithAll(event, args);
+                }
+            };
+
+            this._awaitWriteFinish(path, awf.stabilityThreshold, event, awfEmit);
+            
+            return this;
+        }
+
+        if (event === EV.CHANGE) {
+            const isThrottled = !this._throttle(EV.CHANGE, path, 50);
+            
+            if (isThrottled)
+                return this;
+        }
+    }
 }
