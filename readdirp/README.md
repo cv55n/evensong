@@ -1,4 +1,4 @@
-# readdirp
+# readdirp [![downloads semanais](https://img.shields.io/npm/dw/readdirp.svg)](https://github.com/paulmillr/readdirp)
 
 versão recursiva do `fs.readdir`. expõe uma **api de stream** (com um pequeno footprint de ram e cpu) e uma **api de promise**.
 
