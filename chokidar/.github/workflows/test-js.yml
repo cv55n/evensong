@@ -1,0 +1,8 @@
+name: rodar testes de js
+on:
+  - push
+  - pull_request
+jobs:
+  test-js:
+    name: 'jsbt v0.4.1'
+    uses: paulmillr/jsbt/.github/workflows/test-js-matrix.yml@90c5b7b7aaa71e6b810aae888150f9d661daffec
