@@ -1,0 +1,68 @@
+{
+    // se for atualizar isso, atualize também a configuração em dtsbundler.mjs
+
+    "indentWidth": 4,
+    "lineWidth": 1000,
+    "newLineKind": "auto",
+    "useTabs": false,
+
+    "typescript": {
+        "newLineKind": "crlf",
+        "semiColons": "always",
+        "quoteStyle": "preferDouble",
+        "quoteProps": "consistent",
+        "useBraces": "whenNotSingleLine",
+        "bracePosition": "sameLineUnlessHanging",
+        "singleBodyPosition": "sameLine",
+        "nextControlFlowPosition": "nextLine", // braces estilo stroustrup
+        "trailingCommas": "onlyMultiLine",
+        "preferHanging": false,
+        "operatorPosition": "maintain",
+
+        "arrowFunction.useParentheses": "preferNone",
+        "conditionalExpression.linePerExpression": false, // manter nossas condicionais "match/case"
+        "functionExpression.spaceAfterFunctionKeyword": true,
+        "importDeclaration.forceMultiLine": "whenMultiple",
+        "constructorType.spaceAfterNewKeyword": true,
+        "constructSignature.spaceAfterNewKeyword": true,
+
+        "module.sortImportDeclarations": "caseInsensitive",
+        "module.sortExportDeclarations": "caseInsensitive",
+        "exportDeclaration.sortNamedExports": "caseInsensitive",
+        "importDeclaration.sortNamedImports": "caseInsensitive"
+    },
+
+    "yaml": {
+        "indentWidth": 2,
+        "quotes": "preferSingle"
+    },
+
+    "json": {
+        // isso seria bom em arquivos jsonc conhecidos, mas o vscode alerta sobre vírgulas finais
+        "trailingCommas": "never"
+    },
+
+    "excludes": [
+        "**/.git",
+        "**/node_modules",
+        "**/*-lock.json",
+        "coverage/**",
+        "lib/**",
+        "built/**",
+        "tests/**",
+        "internal/**",
+        "**/*.generated.*",
+        "scripts/*.d.*",
+        "**/_namespaces/**"
+    ],
+
+    // nota: se adicionar novos idiomas, certifique-se de que settings.template.json também esteja atualizado
+    //
+    // além disso, se estiver atualizando o typescript, atualize o que está em package.json
+    
+    "plugins": [
+        "https://plugins.dprint.dev/typescript-0.93.4.wasm",
+        "https://plugins.dprint.dev/json-0.19.4.wasm",
+        "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.0.wasm"
+    ]
+}
