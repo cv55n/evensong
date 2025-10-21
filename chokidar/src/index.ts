@@ -804,5 +804,437 @@ export class FSWatcher extends EventEmitter<FSWatcherEventMap> {
             if (isThrottled)
                 return this;
         }
+
+        if (
+            opts.alwaysStat &&
+            stats === undefined &&
+            (event === EV.ADD || event === EV.ADD_DIR || event === EV.CHANGE)
+        ) {
+            const fullPath = opts.cwd ? sp.join(opts.cwd, path) : path;
+
+            let stats;
+
+            try {
+                stats = await stat(fullPath);
+            } catch (err) {
+                // não fazer nada
+            }
+
+            // suprime o evento quando fs_stat falhar, para evitar o envio de 'stat' indefinido
+            if (!stats || this.closed)
+                return;
+
+            args.push(stats);
+        }
+
+        this.emitWithAll(event, args);
+
+        return this;
+    }
+
+    /**
+     * handler comum para erros
+     * 
+     * @returns o erro caso definido
+     */
+    _handleError(error: Error): Error | boolean {
+        const code = error && (error as Error & { code: string }).code;
+
+        if (
+            error &&
+            code !== 'ENOINT' &&
+            code !== 'ENOTDIR' &&
+            (!this.options.ignorePermissionErrors || (code !== 'EPERM' && code !== 'EACCES'))
+        ) {
+            this.emit(EV.ERROR, error);
+        }
+
+        return error || this.closed;
+    }
+
+    /**
+     * utilitário auxiliar para throttling
+     * 
+     * @param actionType o tipo sendo limitado
+     * @param path o path que está sendo seguido
+     * @param timeout duração de tempo de supressão de ações duplicadas
+     * 
+     * @returns o objeto de rastreamento ou false se a ação deve ser suprimida
+     */
+    _throttle(actionType: ThrottleType, path: Path, timeout: number): Throttler | false {
+        if (!this._throttled.has(actionType)) {
+            this._throttled.set(actionType, new Map());
+        }
+
+        const action = this._throttled.get(actionType);
+        
+        if (!action)
+            throw new Error('throttle inválido');
+        
+        const actionPath = action.get(path);
+
+        if (actionPath) {
+            actionPath.count++;
+
+            return false;
+        }
+
+        // eslint-disable-next-line prefer-const
+        let timeoutObject: NodeJS.Timeout;
+
+        const clear = () => {
+            const item = action.get(path);
+            const count = item ? item.count : 0;
+
+            action.delete(path);
+
+            clearTimeout(timeoutObject);
+
+            if (item)
+                clearTimeout(item.timeoutObject);
+
+            return count;
+        };
+
+        timeoutObject = setTimeout(clear, timeout);
+
+        const thr = {
+            timeoutObject,
+            clear,
+            count: 0
+        };
+
+        action.set(path, thr);
+
+        return thr;
+    }
+
+    _incrReadyCount(): number {
+        return this._readyCount++;
+    }
+
+    /**
+     * aguarda a operação write de ser finalizada
+     * 
+     * @param path o path sendo seguido
+     * @param threshold tempo em milissegundos que um tamanho de arquivo deve ser corrigido antes de reconhecer que a gravação do op foi concluída
+     * @param event o evento
+     * @param awfEmit o callback a ser chamado quando estiver pronto para o evento ser emitido.
+     */
+    _awaitWriteFinish(
+        path: Path,
+        threshold: number,
+        event: EventName,
+        awfEmit: (err?: Error, stat?: Stats) => void
+    ): void {
+        const awf = this.options.awaitWriteFinish;
+
+        if (typeof awf !== 'object')
+            return;
+
+        const pollInterval = awf.pollInterval as unknown as number;
+
+        let timeoutHandler: NodeJS.Timeout;
+
+        let fullPath = path;
+
+        if (this.options.cwd && !sp.isAbsolute(path)) {
+            fullPath = sp.join(this.options.cwd, path);
+        }
+
+        const now = new Date();
+
+        const writes = this._pendingWrites;
+
+        function awaitWriteFinishFn(prevStat?: Stats): void {
+            statcb(fullPath, (err, curStat) => {
+                if (err || !writes.has(path)) {
+                    if (err && err.code !== 'ENOENT')
+                        awfEmit(err);
+
+                    return;
+                }
+
+                const now = Number(new Date());
+
+                if (prevStat && curStat.size !== prevStat.size) {
+                    writes.get(path).lastChange = now;
+                }
+
+                const pw = writes.get(path);
+                const df = now - pw.lastChange;
+
+                if (df >= threshold) {
+                    writes.delete(path);
+
+                    awfEmit(undefined, curStat);
+                } else {
+                    timeoutHandler = setTimeout(awaitWriteFinishFn, pollInterval, curStat);
+                }
+            });
+        }
+
+        if (!writes.has(path)) {
+            writes.set(path, {
+                lastChange: now,
+
+                cancelWait: () => {
+                    writes.delete(path);
+                    
+                    clearTimeout(timeoutHandler);
+                    
+                    return event;
+                }
+            });
+
+            timeoutHandler = setTimeout(awaitWriteFinishFn, pollInterval);
+        }
+    }
+
+    /**
+     * determina se o usuário solicitou ignorar este path
+     */
+    _isIgnored(path: Path, stats?: Stats): boolean {
+        if (this.options.atomic && DOT_RE.test(path))
+            return true;
+        
+        if (!this._userIgnored) {
+            const { cwd } = this.options;
+            const ign = this.options.ignored;
+
+            const ignored = (ign || []).map(normalizeIgnored(cwd));
+            const ignoredPaths = [...this._ignoredPaths];
+            const list: Matcher[] = [...ignoredPaths.map(normalizeIgnored(cwd)), ...ignored];
+            
+            this._userIgnored = anymatch(list, undefined);
+        }
+
+        return this._userIgnored(path, stats);
+    }
+
+    _isntIgnored(path: Path, stat?: Stats): boolean {
+        return !this._isIgnored(path, stat);
+    }
+
+    /**
+     * fornece um conjunto de helpers e propriedades comuns relacionados ao tratamento de links simbólicos
+     * 
+     * @param path arquivo ou diretório sendo observado
+     */
+    _getWatchHelpers(path: Path): WatchHelper {
+        return new WatchHelper(path, this.options.followSymlinks, this);
+    }
+
+    // helpers de diretório
+    // --------------------
+
+    /**
+     * fornece os objetos de rastreamento de diretório
+     * 
+     * @param directory path do diretório
+     */
+    _getWatchedDir(directory: string): DirEntry {
+        const dir = sp.resolve(directory);
+        
+        if (!this._watched.has(dir))
+            this._watched.set(dir, new DirEntry(dir, this._boundRemove));
+        
+        return this._watched.get(dir)!;
+    }
+
+    // helpers de arquivo
+    // ------------------
+
+    /**
+     * saiba mais sobre as permissões de leitura
+     * https://stackoverflow.com/a/11781404/1358405
+     */
+    _hasReadPermissions(stats: Stats): boolean {
+        if (this.options.ignorePermissionErrors)
+            return true;
+        
+        return Boolean(Number(stats.mode) & 0o400);
+    }
+
+    /**
+     * manipula a emissão de eventos unlink para arquivos e diretórios
+     * e, por meio de recursão, para arquivos e diretórios dentro de
+     * diretórios que não estão linkados
+     * 
+     * @param directory dentro do qual o seguinte item está localizado
+     * @param item      path base do item/diretório
+     */
+    _remove(directory: string, item: string, isDirectory?: boolean): void {
+        // se o que está sendo excluído for um diretório, obtém os paths desse
+        // diretório para exclusão recursiva e limpeza do objeto monitorado
+        //
+        // se não for um diretório, nesteddirectorychildren será um array vazio
+        
+        const path = sp.join(directory, item);
+        const fullPath = sp.resolve(path);
+
+        isDirectory = isDirectory != null ? isDirectory : this._watched.has(path) || this._watched.has(fullPath);
+
+        // evita a manipulação duplicada no caso de chegar aqui quase
+        // simultaneamente por meio de vários paths (como o _handlefile e o _handledir)
+        if (!this._throttle('remove', path, 100))
+            return;
+
+        // se o único arquivo monitorado for removido, observe seu retorno
+        if (!isDirectory && this._watched.size === 1) {
+            this.add(directory, item, true);
+        }
+
+        // isso criará uma nova entrada no objeto monitorado em ambos os casos, 
+        // então precisamos fazer a verificação do diretório com antecedência
+        const wp = this._getWatchedDir(path);
+        const nestedDirectoryChildren = wp.getChildren();
+
+        // recursivamente remove os arquivos/diretórios children
+        nastedDirectoryChildren.forEach((nasted) => this._remove(path, nasted));
+
+        // checa se o item estava na lista observada e o remove
+        const parent = this._getWatchedDir(directory);
+        const wasTracked = parent.has(item);
+
+        parent.remove(item);
+
+        // corrige o issue #1042 -> paths relativos foram detectados e adicionados
+        // como links simbólicos:
+        //
+        // (https://github.com/paulmillr/chokidar/blob/e1753ddbc9571bdc33b4a4af172d52cb6e611c10/lib/nodefs-handler.js#L612)
+        //
+        // mas nunca removido do mapa caso o path fosse excluído
+        //
+        // isso leva a um estado incorreto se o path foi recriado:
+        //
+        // https://github.com/paulmillr/chokidar/blob/e1753ddbc9571bdc33b4a4af172d52cb6e611c10/lib/nodefs-handler.js#L553
+        
+        if (this._symlinkPaths.has(fullPath)) {
+            this._symlinkPaths.delete(fullPath);
+        }
+
+        // se esperarmos que este arquivo seja totalmente gravado, cancele a espera
+        let relPath = path;
+
+        if (this.options.cwd)
+            relPath = sp.relative(this.options.cwd, path);
+        
+        if (this.options.awaitWriteFinish && this._pendingWrites.has(relPath)) {
+            const event = this._pendingWrites.get(relPath).cancelWait();
+            
+            if (event === EV.ADD)
+                return;
+        }
+
+        // a entrada será um diretório que acabou de ser removido ou uma entrada
+        // falsa para um arquivo; em ambos os casos, temos que removê-la
+        this._watched.delete(path);
+        this._watched.delete(fullPath);
+
+        const eventName: EventName = isDirectory ? EV.UNLINK_DIR : EV.UNLINK;
+        
+        if (wasTracked && !this._isIgnored(path))
+            this._emit(eventName, path);
+
+        // evita conflitos se mais tarde criarmos outro arquivo com o mesmo nome
+        this._closePath(path);
+    }
+
+    /**
+     * fecha todos os watchers para um path
+     */
+    _closePath(path: Path): void {
+        this._closeFile(path);
+        
+        const dir = sp.dirname(path);
+        
+        this._getWatchedDir(dir).remove(sp.basename(path));
+    }
+
+    /**
+     * fecha apenas watchers de arquivos em específico
+     */
+    _closeFile(path: Path): void {
+        const closers = this._closers.get(path);
+        
+        if (!closers)
+            return;
+
+        closers.forEach((closer) => closer());
+        
+        this._closers.delete(path);
+    }
+
+    _addPathCloser(path: Path, closer: () => void): void {
+        if (!closer)
+            return;
+        
+        let list = this._closers.get(path);
+        
+        if (!list) {
+            list = [];
+
+            this._closers.set(path, list);
+        }
+
+        list.push(closer);
+    }
+
+    _readdirp(root: Path, opts?: Partial<ReaddirpOptions>): ReaddirpStream | undefined {
+        if (this.closed)
+            return;
+
+        const options = {
+            type: EV.ALL,
+            alwaysStat: true,
+            lstat: true,
+            ...opts,
+            depth: 0
+        };
+        
+        let stream: ReaddirpStream | undefined = readdirp(root, options);
+        
+        this._streams.add(stream);
+        
+        stream.once(STR_CLOSE, () => {
+            stream = undefined;
+        });
+        
+        stream.once(STR_END, () => {
+            if (stream) {
+                this._streams.delete(stream);
+                
+                stream = undefined;
+            }
+        });
+        
+        return stream;
     }
 }
+
+/**
+ * instancia o watcher com os paths a serem rastreados
+ * 
+ * @param paths path do arquivo/diretório
+ * @param options opções, como `atomic`, `awaitwritefinish`, `ignore`, e outras
+ * 
+ * @returns uma instância do fswatcher para chaining
+ * 
+ * @example
+ * const watcher = watch('.').on('all', (event, path) => { console.log(event, path); });
+ * watch('.', { atomic: true, awaitWriteFinish: true, ignored: (f, stats) => stats?.isFile() && !f.endsWith('.js') });
+ */
+export function watch(paths: string | string[], options: ChokidarOptions = {}): FSWatcher {
+    const watcher = new FSWatcher(options);
+
+    watcher.add(paths);
+    
+    return watcher;
+}
+
+export default {
+    watch: watch as typeof watch,
+    
+    FSWatcher: FSWatcher as typeof FSWatcher
+};
