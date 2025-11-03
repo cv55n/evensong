@@ -909,34 +909,34 @@ describe('assert', function() {
 					a: 1
 				}
 			}, 'blah');
-		}, "blah: expected { foo: { a: 1 }, bar: { b: 2 } } to have property 'foo' of { a: 1 }, but got { a: 1 }");
+		}, "blah: esperava-se que { foo: { a: 1 }, bar: { b: 2 } } possuísse a propriedade 'foo' de { a: 1 }, mas teve { a: 1 }");
 
 		err(function() {
 				assert.include(true, true, 'blah');
 			},
-			"blah: the given combination of arguments (boolean and boolean) is invalid for this assertion. " +
-			"You can use an array, a map, an object, a set, a string, or a weakset instead of a boolean"
+			"blah: a combinação dada de argumentos (boolean e boolean) é inválida para esta afirmação. " +
+			"você pode usar um array, um mapa, um objeto, um conjunto, uma string ou um conjunto fraco em vez de um boolean"
 		);
 
 		err(function() {
 				assert.include(42, 'bar');
 			},
-			"the given combination of arguments (number and string) is invalid for this assertion. " +
-			"You can use an array, a map, an object, a set, a string, or a weakset instead of a string"
+			"a combinação dada de argumentos (number and string) é inválida para esta afirmação. " +
+			"você pode usar um array, um mapa, um objeto, um conjunto, uma string ou um conjunto fraco em vez de uma string"
 		);
 
 		err(function() {
 				assert.include(null, 42);
 			},
-			"the given combination of arguments (null and number) is invalid for this assertion. " +
-			"You can use an array, a map, an object, a set, a string, or a weakset instead of a number"
+			"a combinação dada de argumentos (null e number) é inválida para esta afirmação. " +
+			"você pode usar um array, um mapa, um objeto, um conjunto, uma string ou um conjunto fraco em vez de um número"
 		);
 
 		err(function() {
 				assert.include(undefined, 'bar');
 			},
-			"the given combination of arguments (undefined and string) is invalid for this assertion. " +
-			"You can use an array, a map, an object, a set, a string, or a weakset instead of a string"
+			"a combinação dada de argumentos (undefined e string) é inválida para esta afirmação. " +
+			"você pode usar um array, um mapa, um objeto, um conjunto, uma string ou um conjunto fraco em vez de uma string"
 		);
 	});
 
@@ -1036,7 +1036,7 @@ describe('assert', function() {
 				};
 			
 			assert.notInclude([obj1, obj2], obj1, 'blah');
-		}, "blah: expected [ { a: 1 }, { b: 2 } ] to not include { a: 1 }");
+		}, "blah: esperava-se que [ { a: 1 }, { b: 2 } ] não incluísse { a: 1 }");
 
 		err(function() {
 			var obj1 = {
@@ -1053,7 +1053,7 @@ describe('assert', function() {
 				foo: obj1,
 				bar: obj2
 			}, 'blah');
-		}, "blah: expected { foo: { a: 1 }, bar: { b: 2 } } to not have property 'foo' of { a: 1 }");
+		}, "blah: esperava-se que { foo: { a: 1 }, bar: { b: 2 } } não possuísse a propriedade 'foo' de { a: 1 }");
 
 		err(function() {
 				assert.notInclude(true, true, 'blah');
@@ -1085,7 +1085,7 @@ describe('assert', function() {
 
 		err(function() {
 			assert.notInclude('foobar', 'bar');
-		}, "expected \'foobar\' to not include \'bar\'");
+		}, "esperava-se que \'foobar\' não incluísse \'bar\'");
 	});
 
 	it('deepInclude and notDeepInclude', function() {
@@ -1187,19 +1187,19 @@ describe('assert', function() {
 
 		err(function() {
 			assert.deepInclude(new WeakSet(), {}, 'foo');
-		}, 'foo: unable to use .deep.include with WeakSet');
+		}, 'foo: não é possível usar .deep.include com weakset');
 
 		err(function() {
 			assert.deepInclude([obj1, obj2], {
 				a: 9
 			}, 'blah');
-		}, "blah: expected [ { a: 1 }, { b: 2 } ] to deep include { a: 9 }");
+		}, "blah: esperava-se que [ { a: 1 }, { b: 2 } ] incluísse profundamente { a: 9 }");
 
 		err(function() {
 			assert.notDeepInclude([obj1, obj2], {
 				a: 1
 			});
-		}, "expected [ { a: 1 }, { b: 2 } ] to not deep include { a: 1 }");
+		}, "esperava-se que [ { a: 1 }, { b: 2 } ] não incluísse profundamente { a: 1 }");
 
 		err(function() {
 			assert.deepInclude({
@@ -1213,7 +1213,7 @@ describe('assert', function() {
 					b: 9
 				}
 			}, 'blah');
-		}, "blah: expected { foo: { a: 1 }, bar: { b: 2 } } to have deep property 'bar' of { b: 9 }, but got { b: 2 }");
+		}, "blah: esperava-se que { foo: { a: 1 }, bar: { b: 2 } } to have deep property 'bar' of { b: 9 }, but got { b: 2 }");
 
 		err(function() {
 			assert.notDeepInclude({
@@ -2694,19 +2694,19 @@ describe('assert', function() {
 			assert.deepNestedPropertyVal(obj, 'a.b', {
 				c: 7
 			}, 'blah');
-		}, "blah: expected { a: { b: { c: 1 } } } to have deep nested property 'a.b' of { c: 7 }, but got { c: 1 }");
+		}, "blah: esperava-se que { a: { b: { c: 1 } } } possuísse a propriedade 'a.b' profundamente aninhada de { c: 7 }, mas teve { c: 1 }");
 
 		err(function() {
 			assert.deepNestedPropertyVal(obj, 'a.z', {
 				c: 1
 			}, 'blah');
-		}, "blah: expected { a: { b: { c: 1 } } } to have deep nested property 'a.z'");
+		}, "blah: esperava-se que { a: { b: { c: 1 } } } possuísse a propriedade 'a.z' profundamente aninhada");
 
 		err(function() {
 			assert.notDeepNestedPropertyVal(obj, 'a.b', {
 				c: 1
 			}, 'blah');
-		}, "blah: expected { a: { b: { c: 1 } } } to not have deep nested property 'a.b' of { c: 1 }");
+		}, "blah: esperava-se que { a: { b: { c: 1 } } } não possuísse a propriedade 'a.b' profundamente aninhada de { c: 1 }");
 	});
 
 	it('throws / throw / Throw', function() {
@@ -2780,19 +2780,19 @@ describe('assert', function() {
 				assert[throws](function() {
 					throw new Error('foo')
 				}, TypeError);
-			}, "expected [Function] to throw 'TypeError' but 'Error: foo' was thrown")
+			}, "esperava-se que [function] lançasse um 'typeerror' mas foi lançado um 'error: foo'")
 
 			err(function() {
 				assert[throws](function() {
 					throw new Error('foo')
 				}, 'bar');
-			}, "expected [Function] to throw error including 'bar' but got 'foo'")
+			}, "esperava-se que [function] lançasse um erro incluindo 'bar', mas foi obtido 'foo'")
 
 			err(function() {
 				assert[throws](function() {
 					throw new Error('foo')
 				}, Error, 'bar', 'blah');
-			}, "blah: expected [Function] to throw error including 'bar' but got 'foo'")
+			}, "blah: esperava-se que [function] lançasse um erro incluindo 'bar', mas foi obtido 'foo'")
 
 			err(function() {
 				assert[throws](function() {
@@ -2802,27 +2802,27 @@ describe('assert', function() {
 
 			err(function() {
 				assert[throws](function() {});
-			}, "expected [Function] to throw an error");
+			}, "esperava-se que [function] lançasse um erro");
 
 			err(function() {
 				assert[throws](function() {
 					throw new Error('')
 				}, 'bar');
-			}, "expected [Function] to throw error including 'bar' but got ''");
+			}, "esperava-se que [function] lançasse um erro incluindo 'bar' mas teve ''");
 
 			err(function() {
 				assert[throws](function() {
 					throw new Error('')
 				}, /bar/);
-			}, "expected [Function] to throw error matching /bar/ but got ''");
+			}, "esperava-se que [function] lançasse um erro que coincida com /bar/ mas teve ''");
 
 			err(function() {
 				assert[throws]({});
-			}, "expected {} to be a function");
+			}, "esperava-se que {} fosse uma função");
 
 			err(function() {
 				assert[throws]({}, Error, 'testing', 'blah');
-			}, "blah: expected {} to be a function");
+			}, "blah: esperava-se que {} fosse uma função");
 		});
 	});
 
@@ -2870,13 +2870,13 @@ describe('assert', function() {
 			assert.doesNotThrow(function() {
 				throw new Error('foo');
 			});
-		}, "expected [Function] to not throw an error but 'Error: foo' was thrown");
+		}, "esperava-se que [function] to not throw an error but 'Error: foo' was thrown");
 
 		err(function() {
 			assert.doesNotThrow(function() {
 				throw new CustomError('foo');
 			});
-		}, "expected [Function] to not throw an error but 'CustomError: foo' was thrown");
+		}, "esperava-se que [function] to not throw an error but 'CustomError: foo' was thrown");
 
 		err(function() {
 			assert.doesNotThrow(function() {
@@ -2924,15 +2924,15 @@ describe('assert', function() {
 			assert.doesNotThrow(function() {
 				throw new Error('');
 			}, Error, '');
-		}, "expected [Function] to not throw 'Error' but 'Error' was thrown");
+		}, "esperava-se que [function] não lançasse um 'Error' mas 'Error' foi lançado");
 
 		err(function() {
 			assert.doesNotThrow({});
-		}, "expected {} to be a function");
+		}, "esperava-se que {} fosse uma função");
 
 		err(function() {
-			assert.doesNotThrow({}, Error, 'testing', 'blah');
-		}, "blah: expected {} to be a function");
+			assert.doesNotThrow({}, Error, 'testando', 'blah');
+		}, "blah: esperava-se que {} fosse uma função");
 	});
 
 	it('ifError', function() {
@@ -3015,15 +3015,15 @@ describe('assert', function() {
 
 		err(function() {
 			assert.closeTo(2, 1.0, 0.5, 'blah');
-		}, "blah: expected 2 to be close to 1 +/- 0.5");
+		}, "blah: esperava-se que 2 esteja próximo de 1 +/- 0.5");
 
 		err(function() {
 			assert.closeTo(-10, 20, 29);
-		}, "expected -10 to be close to 20 +/- 29");
+		}, "esperava-se que -10 esteja próximo de 20 +/- 29");
 
 		err(function() {
 			assert.closeTo([1.5], 1.0, 0.5, 'blah');
-		}, "blah: expected [ 1.5 ] to be numeric");
+		}, "blah: esperava-se que [ 1.5 ] to be numeric");
 
 		err(function() {
 			assert.closeTo(1.5, "1.0", 0.5, 'blah');
@@ -3939,31 +3939,39 @@ describe('assert', function() {
 				value: 10,
 				str: 'foo'
 			},
+			
 			heroes = ['spiderman', 'superman'],
+
 			fn = function() {
 				obj.value += 5
 			},
+			
 			fnDec = function() {
 				obj.value -= 20
 			},
+			
 			getterFn = function() {
 				return obj.value
 			},
+			
 			bangFn = function() {
 				obj.str += '!'
 			},
+			
 			smFn = function() {
 				'foo' + 'bar'
 			},
+			
 			batFn = function() {
 				heroes.push('batman')
 			},
+			
 			lenFn = function() {
 				return heroes.length
 			};
 
 		assert.changes(fn, obj, 'value');
-		assert.changes(fn, getterFn, 'changes via getter function');
+		assert.changes(fn, getterFn, 'alterações via função getter');
 		assert.changesBy(fn, obj, 'value', 5);
 		assert.changesBy(fn, obj, 'value', -5);
 		assert.changesBy(fn, getterFn, 5);
@@ -4009,25 +4017,32 @@ describe('assert', function() {
 				value: 10,
 				noop: null
 			},
+
 			arr = ['one', 'two'],
+
 			pFn = function() {
 				arr.push('three')
 			},
 			popFn = function() {
 				arr.pop()
 			},
+
 			lenFn = function() {
 				return arr.length
 			},
+
 			incFn = function() {
 				obj.value += 2
 			},
+
 			decFn = function() {
 				obj.value -= 3
 			},
+
 			getterFn = function() {
 				return obj.value
 			},
+
 			smFn = function() {
 				obj.value += 0
 			};
@@ -4228,11 +4243,12 @@ describe('assert', function() {
 				}
 			});
 
-			// Object.isSealed will call ownKeys trap only if object is not extensible
+			// o método `object.issealed` chamará a armadilha `ownkeys` somente se o objeto não for extensível
 			Object.preventExtensions(proxy);
 
 			err(function() {
-				// isSealed should not suppress errors, thrown in proxy traps
+				// issealed não deve suprimir erros lançados em traps de proxy
+				
 				assert[isSealed](proxy);
 			}, {
 				name: 'TypeError'
@@ -4248,30 +4264,30 @@ describe('assert', function() {
 
 			err(function() {
 				assert[isNotSealed](sealedObject, 'blah');
-			}, 'blah: expected {} to not be sealed');
+			}, 'blah: esperava-se que {} não fosse selado');
 
 			// garantir que a resposta `object.isextensible` semelhante ao es6 seja
 			// respeitada para todos os tipos primitivos
 
 			err(function() {
 				assert[isNotSealed](42);
-			}, 'expected 42 to not be sealed');
+			}, 'esperava-se que 42 não fosse selado');
 
 			err(function() {
 				assert[isNotSealed](null);
-			}, 'expected null to not be sealed');
+			}, 'esperava-se que null não fosse selado');
 
 			err(function() {
 				assert[isNotSealed]('foo');
-			}, 'expected \'foo\' to not be sealed');
+			}, 'esperava-se que \'foo\' não fosse selado');
 
 			err(function() {
 				assert[isNotSealed](false);
-			}, 'expected false to not be sealed');
+			}, 'esperava-se que false não fosse selado');
 
 			err(function() {
 				assert[isNotSealed](undefined);
-			}, 'expected undefined to not be sealed');
+			}, 'esperava-se que undefined não fosse selado');
 
 			var proxy = new Proxy({}, {
 				ownKeys: function() {
@@ -4279,11 +4295,12 @@ describe('assert', function() {
 				}
 			});
 
-			// Object.isSealed will call ownKeys trap only if object is not extensible
+			// o método `object.issealed` chamará a armadilha `ownkeys` somente se o objeto não for extensível
 			Object.preventExtensions(proxy);
 
 			err(function() {
-				// isNotSealed should not suppress errors, thrown in proxy traps
+				// isnotsealed não deve suprimir erros lançados em traps de proxy
+
 				assert[isNotSealed](proxy);
 			}, {
 				name: 'TypeError'
@@ -4317,11 +4334,12 @@ describe('assert', function() {
 				}
 			});
 
-			// Object.isFrozen will call ownKeys trap only if object is not extensible
+			// o método `object.isfrozen` chamará a armadilha `ownkeys` somente se o objeto não for extensível
 			Object.preventExtensions(proxy);
 
 			err(function() {
-				// isFrozen should not suppress errors, thrown in proxy traps
+				// isfrozen não deve suprimir erros lançados em traps de proxy
+
 				assert[isFrozen](proxy);
 			}, {
 				name: 'TypeError'
@@ -4373,7 +4391,7 @@ describe('assert', function() {
 
 			err(function() {
 				// isnotfrozen não deve suprimir erros lançados em traps de proxy
-				
+
 				assert[isNotFrozen](proxy);
 			}, {
 				name: 'TypeError'
