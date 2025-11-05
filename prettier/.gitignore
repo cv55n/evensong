@@ -1,0 +1,53 @@
+# node_modules
+#
+# existe o diretório `node_modules` para testes, não ignorar todos eles
+
+/node_modules
+/website/node_modules
+/scripts/release/node_modules
+/scripts/tools/bundle-test/node_modules
+/scripts/tools/eslint-plugin-prettier-internal-rules/node_modules
+
+.tmp
+*.log
+*.tgz
+/errors
+/test*.*
+
+/.vscode/**/*
+!/.vscode/extensions.json
+!/.vscode/settings.example.json
+
+/dist*
+
+/website/build
+/website/i18n
+/website/static/playground
+/website/static/lib
+/website/.docusaurus
+
+.DS_Store
+/coverage
+.idea
+package-lock.json
+
+**/.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
+**/.pnp.*
+.nyc_output
+.devcontainer
+.node-version
+
+# ao instalar um software no gitpod.io, são gerados arquivos `core.*`
+/core.*
+*.swp
+
+# para o diretório 0x flamegraph (https://github.com/davidmarkclements/0x)
+*.0x/
+
+# para o arquivo de perfil de cpu integrado do node.js
+*.cpuprofile
