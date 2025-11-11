@@ -1,0 +1,131 @@
+{
+    $schema: "https://docs.renovatebot.com/renovate-schema.json",
+    
+    dependencyDashboardApproval: true,
+
+    labels: ["dependency"],
+    baseBranchPatterns: ["main"],
+    schedule: ["after 01:00 on sunday"],
+    postUpdateOptions: ["yarnDedupeHighest"],
+
+    prHourlyLimit: 0,
+    prConcurrenLimit: 0,
+
+    packageRules: [
+        {
+            groupName: "react",
+
+            matchPackageNames: ["react", "react-dom"]
+        },
+
+        {
+            groupName: "babel",
+
+            matchPackageNames: ["@babel/*"]
+        },
+
+        {
+            groupName: "typescript-eslint",
+
+            matchPackageNames: ["@typescript-eslint/*"]
+        },
+
+        {
+            groupName: "glimmer",
+
+            matchPackageNames: ["@glimmer/*"]
+        },
+
+        {
+            groupName: "flow-parser",
+
+            matchPackageNames: ["flow-parser", "hermes-parser"]
+        },
+
+        {
+            groupName: "dependências relacionadas ao eslint",
+
+            matchPackageNames: [
+                "eslint",
+                "@eslint/*",
+                "@eslint-react/eslint-plugin",
+                "@stylistic/eslint-plugin",
+                "eslint-config-prettier",
+                "eslint-plugin-compat",
+                "eslint-plugin-jest",
+                "eslint-plugin-n",
+                "eslint-plugin-regexp",
+                "eslint-plugin-simple-import-sort",
+                "eslint-plugin-unicorn",
+                "globals"
+            ]
+        },
+
+        {
+            groupName: "estree do angular",
+            matchPackageNames: ["@angular/compiler", "angular-estree-parser"]
+        },
+
+        {
+            groupName: "dependências relacionadas à regex",
+            matchPackageNames: ["regexp-util", "unicode-regex", "cjk-regex"]
+        },
+
+        {
+            groupName: "dependências relacionadas à pesquisa de configuração",
+            matchPackageNames: ["url-or-path", "search-closest"]
+        },
+
+        {
+            branchPrefix: "renovate/website/",
+            matchFileNames: ["website/package.json"],
+            labels: ["dependency:website"]
+        },
+
+        {
+            branchPrefix: "renovate/tools/",
+
+            matchFileNames: [
+                "scripts/release/package.json",
+                "scripts/tools/bundle-test/package.json",
+                "scripts/tools/eslint-plugin-prettier-internal-rules/package.json"
+            ],
+
+            labels: ["dependency:tools"]
+        },
+
+        {
+            groupName: "github actions",
+            matchManagers: ["github-actions"]
+        },
+
+        // proibir o codemirror@6.65.7
+        //
+        // https://github.com/prettier/prettier/pull/13171#issuecomment-1258427561
+        {
+            matchPackageNames: ["codemirror"],
+            allowedVersions: "!/^6\\.65\\.7$/"
+        },
+        
+        {
+            matchPackageNames: ["react", "react-dom"],
+            allowedVersions: "^18.0.0"
+        },
+
+        {
+            groupName: "docusaurus",
+            matchPackageNames: ["@docusaurus/*"]
+        }
+    ],
+
+    ignoreDeps: [
+        // é uma dependência do `remark-parse`, usar a mesma versão para reduzir o tamanho
+        "collapse-white-space",
+
+        // será atualizado pelo script de lançamento
+        "prettier",
+
+        // versões antigas são necessárias para realizar os testes
+        "node"
+    ]
+}
