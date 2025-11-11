@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+
+contact_links:
+  - name: issue com a cli experimental
+    url: https://github.com/prettier/prettier-cli/issues
+    about: a cli experimental reside atualmente em um repositório separado; abra uma issue lá
+  
+  - name: 🤔 pergunta de suporte
+    url: https://stackoverflow.com/questions/ask?tags=prettier
+    about: ...
+
+  - name: 📝 ajuda com a extensão prettier do visual studio code
+    url: https://github.com/prettier/prettier-vscode/issues
+    about: bugs e sugestões de melhorias para a extensão do prettier para o visual studio code
