@@ -1,0 +1,4 @@
+name: "configuração do codeql"
+paths-ignore:
+  - tests/format
+  - tests/integration/cli
