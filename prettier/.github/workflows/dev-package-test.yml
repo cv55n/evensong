@@ -1,0 +1,70 @@
+name: teste de pacote de desenvolvimento
+
+on:
+  schedule:
+    # "às 00:00 de domingo." https://crontab.guru/#0_0_*_*_SUN
+    - cron: "0 0 * * SUN"
+
+  pull_request:
+    paths:
+      - "package.json"
+      - "yarn.lock"
+
+      # esse arquivo de workflow
+      - ".github/workflows/dev-package-list.yml"
+      - "tests/config/install-prettier.js"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    if: github.event_name != 'schedule' || github.repository == 'prettier/prettier'
+    timeout-minutes: 15
+
+    strategy:
+      fail-test: false
+
+      matrix:
+        os:
+          - "ubuntu-latest"
+
+        node:
+          # versão mínima de desenvolvimento
+          - "20"
+
+        NPM_CLIENT:
+          - "yarn"
+          - "npm"
+          - "pnpm"
+
+    env:
+      INSTALL_PACKAGE: true
+      PRETTIER_INSTALL_NPM_CLIENT: ${{ matrix.NPM_CLIENT }}
+    
+    name: teste com ${{ matrix.NPM_CLIENT }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: configuração do node.js
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "yarn"
+
+      - name: instalação de dependências
+        run: yarn install --immutable
+
+      - name: instalação do pacote do cliente
+        if: ${{ matrix.NPM_CLIENT == 'pnpm' }}
+        run: npm install --global pnpm
+
+      - name: execução de testes
+        run: yarn test:dev-package

@@ -1,0 +1,57 @@
+name: compatível com bundler
+
+on:
+  schedule:
+    # "às 00:00 de domingo." https://crontab.guru/#0_0_*_*_SUN
+    - cron: "0 0 * * SUN"
+
+  pull_request:
+    paths:
+      - "scripts/tools/bundle-test/**"
+
+      # esse arquivo de workflow
+      - ".github/workflows/bundler-friendly.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name != 'schedule' || github.repository == 'prettier/prettier'
+    name: build
+    uses: ./.github/workflows/_build.yml
+
+  webpack:
+    if: github.event_name != 'schedule' || github.repository == 'prettier/prettier'
+    name: integração do prettier com o webpack
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: configuração do node.js
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          cache: "yarn"
+
+      - name: instalação de dependências
+        run: yarn install --immutable
+
+      - name: download de artefato
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: dist
+          path: dist
+
+      - name: instalação de dependências
+        run: yarn install --immutable
+        working-directory: scripts/tools/bundle-test
+
+      - name: teste
+        run: yarn test
+        working-directory: scripts/tools/bundle-test
