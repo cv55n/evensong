@@ -1,0 +1,49 @@
+# esse workflow realizará uma instalação limpa das dependências
+# do node.js, compilará o código-fonte e executará testes em
+# diferentes versões do node.js
+#
+# para mais informações, veja:
+# https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: ci de node.js
+
+on:
+  push:
+    branches: [ main, 4.x.x ]
+  pull_request:
+    branches: [ main, 4.x.x ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - name: utilize o node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+    - run: npm ci
+    - run: npm run lint
+
+build:
+  runs-on: ubuntu-latest
+
+  strategy:
+    matrix:
+      node-version:
+        - 18 # será removido em 30-04-2025
+        - 20 # será removido em 30-04-2026
+        - latest
+
+      # veja o cronograma de versões do node.js compatíveis em:
+      # https://github.com/nodejs/release#release-schedule
+
+  steps:
+  - uses: actions/checkout@v5
+  - name: utilize o node.js ${{ matrix.node-version }}
+    uses: actions/setup-node@v6
+    with:
+      node-version: ${{ matrix.node-version }}
+  - run: npm ci
+  - run: npm run build --if-present
+  - run: npm run test-node

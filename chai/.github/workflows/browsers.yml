@@ -1,5 +1,5 @@
 # esse workflow realizará uma instalação limpa das dependências
-# do node, compilará o código-fonte e executará testes em
+# do node.js, compilará o código-fonte e executará testes em
 # diferentes versões de navegadores
 
 name: ci de navegadores
