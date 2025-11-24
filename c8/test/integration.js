@@ -110,5 +110,21 @@ beforeEach(function() {
                 /erro: enoent: não existe tal arquivo ou diretório.*loader\.js/
             );
         });
+
+		it('existe com 1 quando o output de report falha', () => {
+			const { status, stderr } = spawnSync(nodePath, [
+				c8Path,
+
+				'--clean=false',
+				'--reporter=unknown',
+				`--merge-async=${mergeAsync}`,
+				nodePath,
+				'--version'
+			]);
+
+			status.should.equal(1);
+
+			stderr.toString().should.match(/não foi possível encontrar o módulo 'desconhecido'/u);
+		});
     });
 });
