@@ -1,5 +1,5 @@
 {
-  "schema": "https://json.schemastore.org/package.json",
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "@cv55n/discord.js",
   "version": "0.0.0",
   "description": "",
