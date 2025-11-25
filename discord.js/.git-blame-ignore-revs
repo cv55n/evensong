@@ -1,0 +1,4 @@
+# .git-blame-ignore-revs
+
+# alterado para eslint-config-neon para a mainlib discord.js
+b03c65c34c6e8bab7f97d507d6ccd7c441a14360
