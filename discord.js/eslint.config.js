@@ -161,28 +161,35 @@ export default defineConfig(
 	},
 
 	{
-		files: [`packages/{api-extractor,api-extractor-model,api-extractor-utils}/**/*${commonFiles}`],
+		files: [
+			`packages/{api-extractor,api-extractor-model,api-extractor-utils}/**/*${commonFiles}`
+		],
+		
 		rules: {
 			'n/prefer-global/process': 0,
 			'@typescript-eslint/naming-convention': 0,
 			'@typescript-eslint/no-empty-interface': 0,
 			'@typescript-eslint/no-empty-object-type': 0,
 			'@typescript-eslint/switch-exhaustiveness-check': 0,
-			'@typescript-eslint/prefer-nullish-coalescing': 0,
-		},
-	},
-
-	{
-		files: [`packages/builders/**/*${commonFiles}`],
-		
-        rules: {
-			'@typescript-eslint/no-empty-object-type': 0,
-			'jsdoc/valid-types': 0,
+			'@typescript-eslint/prefer-nullish-coalescing': 0
 		}
 	},
 
 	{
-		files: [`packages/discord.js/**/*.{js,cjs}`],
+		files: [
+			`packages/builders/**/*${commonFiles}`
+		],
+		
+        rules: {
+			'@typescript-eslint/no-empty-object-type': 0,
+			'jsdoc/valid-types': 0
+		}
+	},
+
+	{
+		files: [
+			`packages/discord.js/**/*.{js,cjs}`
+		],
 		
         languageOptions: {
 			sourceType: 'commonjs',
