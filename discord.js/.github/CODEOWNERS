@@ -1,0 +1,36 @@
+# aprenda como adicionar code owners aqui:
+# https://help.github.com/articles/about-code-owners
+
+* @cv55n
+
+package.json @discordjs/core
+pnpm-lock.yaml @discordjs/core
+
+/.github/ISSUE_TEMPLATE/ @discordjs/guide @discordjs/core
+
+/apps/guide/ @discordjs/website @discordjs/guide
+/apps/guide/content/ @discordjs/guide
+/apps/website/ @discordjs/website
+
+/packages/actions/ @discordjs/actions
+/packages/api-extractor/ @discordjs/api-extractor-utils
+/packages/api-extractor-model/ @discordjs/api-extractor-utils
+/packages/api-extractor-utils/ @discordjs/api-extractor-utils
+/packages/brokers/ @discordjs/brokers
+/packages/builders/ @discordjs/builders
+/packages/collection/ @discordjs/collection
+/packages/core/ @discordjs/core
+/packages/create-discord-bot/ @discordjs/guide
+/packages/discord.js/ @discordjs/core
+/packages/docgen/ @iCrawl
+/packages/formatters/ @discordjs/formatters
+/packages/next/ @discordjs/core
+/packages/proxy/ @discordjs/proxy
+/packages/proxy-container/ @discordjs/proxy
+/packages/rest/ @discordjs/rest
+/packages/scripts/ @discordjs/scripts
+/packages/structures/ @discordjs/structures
+/packages/ui/ @discordjs/ui
+/packages/util/ @discordjs/util
+/packages/voice/ @discordjs/core
+/packages/ws/ @discordjs/ws
