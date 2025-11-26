@@ -1,0 +1,23 @@
+# pacotes
+node_modules
+
+# arquivos log
+logs
+*.log
+npm-debug.log*
+
+# dados de runtime
+pids
+*.pid
+*.seed
+
+# env
+.env
+
+# dist
+dist
+
+# variados
+.turbo
+.tmp
+coverage
