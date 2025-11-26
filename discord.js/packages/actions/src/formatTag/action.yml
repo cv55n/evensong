@@ -1,0 +1,17 @@
+name: 'format tag'
+description: 'formata uma tag git para remover potenciais prefixos'
+
+inputs:
+  tag:
+    description: 'a tag de input'
+    required: true
+outputs:
+  subpackage:
+    description: 'se esta tag é uma tag de subpacote'
+  package:
+    description: 'a string do pacote que foi extraída desta tag'
+  semver:
+    description: 'a string do semver que foi extraída desta tag'
+runs:
+  using: node20
+  main: ../../dist/formatTag/index.js
