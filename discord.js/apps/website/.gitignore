@@ -1,0 +1,35 @@
+# pacotes
+node_modules
+
+# arquivos de log
+logs
+*.log
+npm-debug.log*
+
+# dados de runtime
+pids
+*.pid
+*.seed
+
+# env
+.env
+.env*.local
+
+# dist
+.open-next
+.next
+.wrangler
+public/searchIndex
+public/readme
+src/assets/readme
+src/styles/unocss.css
+
+# variados
+.tmp
+.vscode
+lighthouse-results
+next-env.d.ts
+
+.vercel
+
+old_src
