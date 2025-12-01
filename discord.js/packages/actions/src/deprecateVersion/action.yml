@@ -1,0 +1,31 @@
+name: versão de pacote descontinuada
+description: descontinua versões do pacote.
+
+inputs:
+  package:
+    description: nome do pacote
+    required: true
+
+  version:
+    description: versão a ser descontinuada
+    required: true
+
+  message:
+    description: mensagem de descontinuação
+    required: false
+    default: esta versão está obsoleta. por favor, utilize uma versão mais recente.
+
+  node-auth-token:
+    description: token de autenticação do npm
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+    - name: versão obsoleta
+      shell: bash
+      run: |
+        pnpm exec npm-deprecate --name "${{ inputs.version }}" --message "${{ inputs.message }}" --package "${{ inputs.package }}"
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.node-auth-token }}
