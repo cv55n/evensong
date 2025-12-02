@@ -1,8 +1,8 @@
 import { setInterval, clearInterval } from 'node:timers';
-import { $ } from 'bun';
-
 import { info, warning } from '@actions/core';
 import { getOctokit, context } from '@actions/github';
+import { $ } from 'bun';
+
 import type { ReleaseEntry } from './generateReleaseTree.js';
 
 import process from 'node:process';
