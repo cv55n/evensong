@@ -1,0 +1,30 @@
+name: 'lançamento de pacotes'
+description: 'marca e libera quaisquer pacotes não lançados'
+
+inputs:
+  dev:
+    description: 'publica versões de desenvolvimento de pacotes (ignora a criação de tags e os lançamentos no github)'
+    default: 'false'
+  dry:
+    description: 'executa uma simulação que ignore a publicação e gere registros indicando o que teria acontecido'
+    default: 'false'
+  package:
+    description: 'o nome publicado de um único pacote a ser lançado'
+  exclude:
+    description: 'lista de pacotes separados por vírgula para excluir da versão (caso não sejam dependentes)'
+  tag:
+    description: 'a tag a ser usada, geralmente um nome de uma feature'
+
+runs:
+  using: composite
+
+  steps:
+    - uses: oven-sh/setup-bun@v2
+    - run: bun $GITHUB_ACTION_PATH/index.ts
+      shell: bash
+      env:
+        INPUT_DEV: ${{ inputs.dev }}
+        INPUT_DRY: ${{ inputs.dry }}
+        INPUT_PACKAGE: ${{ inputs.package }}
+        INPUT_EXCLUDE: ${{ inputs.exclude }}
+        INPUT_TAG: ${{ inputs.tag }}
