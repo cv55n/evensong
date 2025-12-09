@@ -1,0 +1,65 @@
+node_modules
+bower_components
+
+#################################
+# ignorar projeto visual studio #
+#################################
+*.config
+*.user
+*.csproj
+*.gpState
+*.sln
+*.suo
+/bin
+/obj
+/packages
+/Properties
+/Scripts
+/report
+/tests/coverage
+
+###################
+# fonte compilada #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+###########
+# pacotes #
+################################################################
+# é melhor descompactar esses arquivos e enviar o código-fonte #
+# bruto para o repositório. o git possui seus próprios métodos #
+# de compressão integrados                                     #
+################################################################
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+##########################
+# logs e bancos de dados #
+##########################
+*.log
+*.sql
+*.sqlite
+
+############################################
+# arquivos gerados por sistema operacional #
+############################################
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+
+############
+# webstorm #
+############
+.idea/
