@@ -1,0 +1,92 @@
+{
+    "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+
+    "mainEntryPointFilePath": "<projectFolder>/dist-docs/index.d.ts",
+    "bundledPackages": [],
+
+    "compiler": {
+        "overrideTsconfig": {
+            "compilerOptions": {
+                "allowUnreachableCode": false,
+				"allowUnusedLabels": false,
+				"exactOptionalPropertyTypes": true,
+				"noFallthroughCasesInSwitch": true,
+				"noImplicitOverride": true,
+				"noImplicitReturns": true,
+				"noPropertyAccessFromIndexSignature": false,
+				"noUncheckedIndexedAccess": true,
+				"noUnusedLocals": true,
+				"noUnusedParameters": true,
+				"strict": true,
+
+                "allowArbitraryExtensions": false,
+				"allowImportingTsExtensions": false,
+				"module": "ESNext",
+				"moduleResolution": "nodenext",
+				"resolveJsonModule": true,
+				"resolvePackageJsonExports": false,
+				"resolvePackageJsonImports": false,
+
+                "declaration": true,
+				"declarationMap": true,
+				"importHelpers": false,
+				"newLine": "lf",
+				"noEmitHelpers": true,
+				"outDir": "dist",
+				"removeComments": false,
+				"sourceMap": true,
+
+                "esModuleInterop": false,
+				"forceConsistentCasingInFileNames": true,
+				"isolatedModules": true,
+
+				"experimentalDecorators": true,
+				"lib": ["ESNext"],
+				"target": "ES2022",
+				"useDefineForClassFields": true
+            }
+        }
+    },
+
+    "apiReport": {
+        "enabled": false
+    },
+
+    "docModel": {
+        "enabled": true,
+
+        "apiJsonFilePath": "<projectFolder>/docs/docs.api.json"
+    },
+
+    "dtsRollup": {
+        "enabled": false,
+
+        "untrimmedFilePath": "<projectFolder>/dist-docs/index.d.ts"
+    },
+
+    "newlineKind": "lf",
+
+    "messages": {
+        "compilerMessageReporting": {
+            "default": {
+                "logLevel": "warning"
+            }
+        },
+
+        "extractorMessageReporting": {
+            "default": {
+                "logLevel": "warning"
+            },
+
+            "ae-missing-release-tag": {
+                "logLevel": "none"
+            }
+        },
+
+        "tsdocMessageReporting": {
+            "default": {
+                "logLevel": "warning"
+            }
+        }
+    }
+}
