@@ -1,0 +1,51 @@
+{
+  "name": "toastr",
+  "filename": "build/toastr.min.js",
+  "main": "toastr.js",
+  "style": "build/toastr.min.css",
+  "version": "2.1.4",
+  "description": "biblioteca javascript para notificações não bloqueantes do tipo gnome/growl.",
+  "homepage": "https://codeseven.github.io/toastr/",
+  "keywords": [
+    "toastr",
+    "toastrjs",
+    "toastr.js"
+  ],
+  "maintainers": [
+    {
+      "name": "cavassani",
+      "url": "https://cv55n.github.io",
+      "twitter": "@grungegaze"
+    }
+  ],
+  "dependencies": {
+    "jquery": "^3.7.1"
+  },
+  "devDependencies": {
+    "gulp": "^5.0.1",
+    "gulp-bytediff": "^1.0.0",
+    "gulp-jscs": "^4.1.0",
+    "gulp-jshint": "^2.1.0",
+    "gulp-less": "^5.0.0",
+    "gulp-load-plugins": "^2.0.8",
+    "gulp-load-utils": "^0.0.4",
+    "gulp-minify-css": "^1.2.4",
+    "gulp-rename": "^2.1.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-task-listing": "^1.1.1",
+    "gulp-uglify": "^3.0.2",
+    "gulp-util": "^3.0.8",
+    "jshint-stylish": "^2.2.1",
+    "karma": "^6.4.4",
+    "karma-coverage": "^2.2.1",
+    "karma-phantomjs-launcher": "^1.0.4",
+    "karma-qunit": "^4.2.1",
+    "merge-stream": "^2.0.0",
+    "phantomjs-prebuilt": "^2.1.16",
+    "plato": "^1.7.0",
+    "qunitjs": "^2.4.0"
+  },
+  "scripts": {
+    "test": "gulp test"
+  }
+}
