@@ -1,0 +1,19 @@
+# definição do comportamento padrão (caso não se tenha
+# core.autocrlf configurado)
+* text=auto
+
+# declarando explicitamente os arquivos de texto que desejamos
+# que sejam sempre normalizados e convertidos para finais de
+# linha nativos no momento do checkout
+*.c text
+*.h text
+
+# declarando os arquivos que sempre terão quebras de linha
+# crlf no checkout
+*.sln text eol=crlf
+*.csproj text eol=crlf
+
+# indicando todos os arquivos que são verdadeiramente binários
+# e não devem ser modificados
+*.png binary
+*.jpg binary
