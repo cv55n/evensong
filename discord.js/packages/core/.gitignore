@@ -1,0 +1,28 @@
+# pacotes
+node_modules
+
+# arquivos de log
+logs
+*.log
+npm-debug.log*
+
+# dados de runtime
+pids
+*.pid
+*.seed
+
+# env
+.env
+
+# dist
+dist
+dist-docs
+
+# docs
+docs/**/*
+!docs/README.md
+
+# variados
+.turbo
+.tmp
+coverage
