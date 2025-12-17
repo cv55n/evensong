@@ -1,0 +1,107 @@
+# referência: https://setuptools.pypa.io/en/latest/userguide/miscellaneous.html
+
+# inclui arquivos top-level individuais
+include CITATION.cff
+include CODEOWNERS
+include Dockerfile
+include LICENSE
+include MANIFEST.in
+include Makefile
+include NOTICE
+include .bc-linter.yml
+include .clang-format .clang-tidy
+include .cmakelintrc
+include .coveragerc
+include .dockerignore
+include .editorconfig
+include .flake8
+include .gdbinit
+include .lintrunner.toml
+include .lldbinit
+include codex_setup.sh
+include docker.Makefile
+include pyrefly.toml
+include ubsan.supp
+
+# inclui bazel e arquivos relacionados a buck
+include BUILD.bazel BUCK.oss
+include WORKSPACE
+include *.bzl
+include .bazelignore .bazelrc .bazelversion
+
+# inclui arquivos de configuração geral
+include *.ini
+
+# inclui informação top-level importante
+include *.md
+
+# inclui arquivos de texto técnicos no momento, como
+# version.txt, cmakelists.txt e requirements.txt
+include *.txt
+
+# inclui configuração de ctags
+include .ctags.d/*.ctags
+
+# inclui sub-pastas completamente
+graft .devcontainer
+graft .vscode
+graft android
+graft aten
+graft benchmarks
+graft binaries
+graft c10
+graft caffe2
+graft cmake
+graft docs
+graft functorch
+graft ios
+graft mypy_plugins
+graft scripts
+graft test
+graft third_party
+graft tools
+graft torch
+graft torchgen
+
+# fixme: a compilação de torch-xla durante a geração de código
+# falhará se este arquivo for incluído no wheel
+exclude torchgen/BUILD.bazel
+
+# as exclusões a seguir omitem partes de dependências de
+# terceiros que contêm links simbólicos inválidos [1] e que
+# não são necessárias para o pytorch, como vinculações para
+# linguagens não utilizadas
+prune third_party/flatbuffers/java
+prune third_party/flatbuffers/kotlin
+prune third_party/ittapi/rust
+prune third_party/nccl/pkg/debian
+prune third_party/opentelemetry-cpp/third_party/prometheus-cpp/cmake/project-import-*
+
+# o documento seguinte também é um link simbólico inválido [1]
+# e supérfluo
+exclude third_party/flatbuffers/docs/source/CONTRIBUTING.md
+
+# omite código auto-gerado
+prune torchgen/packaged
+
+# omite conteúdos em cache, compilados e relacionados a scm
+prune */__pycache__
+prune **/.github
+prune **/.gitlab
+global-exclude *.o *.obj *.so *.dylib *.a *.pxd *.dll *.lib
+global-exclude *.py[cod] *.swp *~
+global-exclude .git .git-blame-ignore-revs .gitattributes .gitignore .gitmodules
+global-exclude .gitlab-ci.yml
+
+# arquivos diversos necessários para o comando setuptools
+# personalizado
+include .gitignore
+include .gitmodules
+
+# [1] links simbólicos inválidos para efeitos de distribuição
+# de código-fonte python, de acordo com o formato de
+# distribuição de código-fonte [2], são links que apontam para
+# fora do diretório de destino ou links com um componente `..`,
+# que são os que interessam aqui
+#
+# [2] https://packaging.python.org/en/latest/specifications/source-distribution-format/#source-distribution-archive-features
