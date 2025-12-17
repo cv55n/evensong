@@ -1,0 +1,47 @@
+build --cxxopt=--std=c++17
+build --copt=-I.
+
+# o bazel não suporta a inclusão de seus alvos cc_library como
+# cabeçalhos de sistema. contornar isso para o código gerado
+# (ex: torch/headeronly/macros/cmake_macros.h) ao tornar o
+# diretório gerado um path de inclusão do sistema
+build --copt=-isystem --copt bazel-out/k8-fastbuild/bin
+build --copt=-isystem --copt bazel-out/darwin-fastbuild/bin
+build --experimental_ui_max_stdouterr_bytes=2048576
+
+# configuração para desabilitar recursos de terminal (tty) em
+# ambientes como ci (integração contínua)
+build:no-tty --curses no
+build:no-tty --progress_report_interval 10
+build:no-tty --show_progress_rate_limit 10
+
+# compilado com suporte a gpu por padrão
+build --define=cuda=true
+
+# configuração de rules_cuda
+build --@rules_cuda//cuda:enable_cuda
+build --@rules_cuda//cuda:cuda_targets=sm_52
+build --@rules_cuda//cuda:compiler=nvcc
+build --repo_env=CUDA_PATH=/usr/local/cuda
+
+# configuração para compilar sem suporte a gpu
+build:cpu-only --define=cuda=false
+
+# define uma pasta de compilação separada para alternar mais
+# rapidamente entre as configurações
+build:cpu-only --platform_suffix=-cpu-only
+
+# consulta a nota sobre a compilação sem configuração para
+# obter detalhes sobre o motivo disso. também precisa-se fazer
+# isso para o sufixo de plataforma "-cpu-only"
+build --copt=-isystem --copt=bazel-out/k8-fastbuild-cpu-only/bin
+
+# configuração de rules_cuda
+build:cpu-only --@rules_cuda//cuda:enable_cuda=False
+
+# definição de --config=shell
+# shell interativo imediatamente antes da execução
+build:shell --run_under="//tools/bazel_tools:shellwrap"
+
+# desativa todos os avisos para repositórios externos
+build --per_file_copt=^external/@-w
