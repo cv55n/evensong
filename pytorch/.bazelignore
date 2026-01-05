@@ -1,0 +1,5 @@
+# não utilizar essa biblioteca na build bazel. contém uma
+# infinidade de links simbólicos que fazem o bazel infeliz
+
+third_party/ittapi/
+third_party/opentelemetry-cpp
