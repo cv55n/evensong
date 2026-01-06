@@ -1,0 +1,4 @@
+source-path=SCRIPTDIR
+
+# era bom habilitar a flag --external-sources aqui mas não é
+# possível: https://github.com/koalaman/shellcheck/issues/1818
