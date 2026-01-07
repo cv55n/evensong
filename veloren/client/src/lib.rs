@@ -402,3 +402,159 @@ pub struct Client {
     /// para o servidor
     local_plugins: Vec<PathBuf>
 }
+
+/// armazena dados relacionados aos personagens dos jogadores
+/// atuais, bem como alguns estados adicionais para lidar com
+/// a ui
+#[derive(Debug, Default)]
+pub struct CharacterList {
+    pub characters: Vec<CharacterItem>,
+    pub loading: bool
+}
+
+async fn connect_quic(
+    network: &Network,
+    hostname: String,
+    override_port: Option<u16>,
+    prefer_ipv6: bool,
+    validate_tls: bool
+) -> Result<network::Participant, crate::error::Error> {
+    let config = if validate_tls {
+        quinn::ClientConfig::try_with_platform_verifier()?
+    } else {
+        warn!(
+            "ignorando a validação da identidade do servidor. não há garantia de que o servidor \
+            ao qual você está conectado seja aquele ao qual você espera se conectar."
+        );
+
+        #[derive(Debug)]
+        struct Verifier;
+
+        impl rustls::client::danger::ServerCertVerifier for Verifier {
+            fn verify_server_cert(
+                &self,
+                _end_entity: &rustls::pki_types::CertificateDer<'_>,
+                _intermediates: &[rustls::pki_types::CertificateDer<'_>],
+                _server_name: &rustls::pki_types::ServerName<'_>,
+                _ocsp_response: &[u8],
+                _now: rustls::pki_types::UnixTime
+            ) -> Result<ServerCertVerified, rustls::Error> {
+                Ok(ServerCertVerified::assertion())
+            }
+
+            fn verify_tls12_signature(
+                &self,
+                _message: &[u8],
+                _cert: &rustls::pki_types::CertificateDer<'_>,
+                _dss: &rustls::DigitallySignedStruct
+            ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+                Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+            }
+
+            fn verify_tls13_signature(
+                &self,
+                _message: &[u8],
+                _cert: &rustls::pki_types::CertificateDer<'_>,
+                _dss: &rustls::DigitallySignedStruct
+            ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+                Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+            }
+
+            fn supported_verify_schemes(&self) -> Vec<rustls::SignatureScheme> {
+                vec![
+                    rustls::SignatureScheme::RSA_PKCS1_SHA1,
+                    rustls::SignatureScheme::ECDSA_SHA1_Legacy,
+                    rustls::SignatureScheme::RSA_PKCS1_SHA256,
+                    rustls::SignatureScheme::ECDSA_NISTP256_SHA256,
+                    rustls::SignatureScheme::RSA_PKCS1_SHA384,
+                    rustls::SignatureScheme::ECDSA_NISTP384_SHA384,
+                    rustls::SignatureScheme::RSA_PKCS1_SHA512,
+                    rustls::SignatureScheme::ECDSA_NISTP521_SHA512,
+                    rustls::SignatureScheme::RSA_PSS_SHA256,
+                    rustls::SignatureScheme::RSA_PSS_SHA384,
+                    rustls::SignatureScheme::RSA_PSS_SHA512,
+                    rustls::SignatureScheme::ED25519,
+                    rustls::SignatureScheme::ED448
+                ]
+            }
+        }
+
+        let mut cfg = rustls::ClientConfig::builder()
+            .dangerous()
+            .with_custom_certificate_verifier(Arc::new(Verifier))
+            .with_no_client_auth();
+
+        cfg.enable_early_data = true;
+
+        quinn::ClientConfig::new(Arc::new(
+            quinn::crypto::rustls::QuicClientConfig::try_from(cfg).unwrap()
+        ))
+    };
+
+    addr::try_connect(network, &hostname, override_port, prefer_ipv6, |a| {
+        ConnectAddr::Quic(a, config.clone(), hostname.clone())
+    }).await
+}
+
+impl Client {
+    pub async fn new(
+        addr: ConnectionArgs,
+        runtime: Arc<Runtime>,
+
+        // todo: refatorar para evitar a necessidade de usar
+        // esse parâmetro de saída
+        mismatched_server_info: &mut Option<ServerInfo>,
+        username: &str,
+        password: &str,
+        locale: Option<String>,
+        auth_trusted: impl FnMut(&str) -> bool,
+        init_stage_update: &(dyn Fn(ClientInitStage) + Send + Sync),
+        add_foreign_systems: impl Fn(&mut DispatcherBuilder) + Send + 'static,
+        #[cfg_attr(not(feature = "plugins"), expect(unused_variables))] config_dir: PathBuf,
+        client_type: ClientType
+    ) -> Result<Self, Error> {
+        let _ = rustls::crypto::ring::default_provider().install_default(); // needs to be initialized before usage
+        let network = Network::new(Pid::new(), &runtime);
+
+        init_stage_update(ClientInitStage::ConnectionEstablish);
+
+        let mut participant = match addr {
+            ConnectionArgs::Srv {
+                hostname,
+                prefer_ipv6,
+                validate_tls,
+                use_quic
+            } => {
+                // tentar primeiro criar um resolvedor com base
+                // em /etc/resolv.conf ou no registro do
+                // windows. se isso falhar, crie um resolvedor
+                // com o endereço ip público 8.8.8.8 do google
+                // configurado diretamente no código
+                let resolver = Resolver::builder_tokio()
+                    .unwrap_or_else(|error| {
+                        error!("falha ao criar o resolvedor dns usando a configuração do sistema: {error:?}");
+
+                        warn!("recorrendo a um resolvedor configurado por padrão");
+
+                        Resolver::builder_with_config(
+                            ResolverConfig::default(),
+                            TokioConnectionProvider::default()
+                        )
+                    })
+                    .build();
+
+                let quic_service_host = format!("_veloren._udp.{hostname}");
+                let quic_lookup_future = resolver.srv_lookup(quic_service_host);
+                let tcp_service_host = format!("_veloren._tcp.{hostname}");
+                let tcp_lookup_future = resolver.srv_lookup(tcp_service_host);
+                let (quic_rr, tcp_rr) = tokio::join!(quic_lookup_future, tcp_lookup_future);
+
+                #[derive(Eq, PartialEq)]
+                enum ConnMode {
+                    Quic,
+                    Tcp
+                }
+            }
+        }
+    }
+}
