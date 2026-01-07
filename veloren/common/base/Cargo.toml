@@ -1,0 +1,25 @@
+[package]
+name = "veloren-common-base"
+description = "dependência mínima para que crates agora dependam de todo o comum"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+tracy = ["profiling", "profiling/profile-with-tracy"]
+
+[dependencies]
+tracing = { workspace = true }
+directories-next = "2.0"
+
+# perfil / tracy
+#
+# nota: isso deve ser mantido sincronizado com a versão do
+# `tracy-client` usada pela versão do `tracing-tracy` em
+# `common/frontend`
+#
+# usar `=` aqui impede que `cargo update` quebre isso
+profiling = { version = "=1.0.17", default-features = false, optional = true }
